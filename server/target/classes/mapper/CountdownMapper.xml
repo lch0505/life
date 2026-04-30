@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.life.progress.mapper.CountdownMapper">
+
+    <resultMap id="BaseResultMap" type="com.life.progress.entity.Countdown">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="title" property="title"/>
+        <result column="description" property="description"/>
+        <result column="category" property="category"/>
+        <result column="target_date" property="targetDate"/>
+        <result column="target_time" property="targetTime"/>
+        <result column="color" property="color"/>
+        <result column="icon" property="icon"/>
+        <result column="is_top" property="isTop"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM countdown WHERE id = #{id}
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT * FROM countdown WHERE user_id = #{userId} ORDER BY is_top DESC, target_date ASC
+    </select>
+
+    <select id="selectByUserIdAndCategory" resultMap="BaseResultMap">
+        SELECT * FROM countdown WHERE user_id = #{userId} AND category = #{category} ORDER BY is_top DESC, target_date ASC
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM countdown ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO countdown (
+            user_id, title, description, category, target_date, target_time, color, icon, is_top, status
+        ) VALUES (
+            #{userId}, #{title}, #{description}, #{category}, #{targetDate}, #{targetTime}, #{color}, #{icon}, #{isTop}, #{status}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE countdown SET
+            title = #{title},
+            description = #{description},
+            category = #{category},
+            target_date = #{targetDate},
+            target_time = #{targetTime},
+            color = #{color},
+            icon = #{icon},
+            is_top = #{isTop},
+            status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE countdown SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <update id="updateTop">
+        UPDATE countdown SET is_top = #{isTop} WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM countdown WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByUserId">
+        DELETE FROM countdown WHERE user_id = #{userId}
+    </delete>
+
+</mapper>

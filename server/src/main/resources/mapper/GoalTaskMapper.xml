@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.life.progress.mapper.GoalTaskMapper">
+
+    <resultMap id="BaseResultMap" type="com.life.progress.entity.GoalTask">
+        <id column="id" property="id"/>
+        <result column="goal_id" property="goalId"/>
+        <result column="user_id" property="userId"/>
+        <result column="title" property="title"/>
+        <result column="description" property="description"/>
+        <result column="progress" property="progress"/>
+        <result column="status" property="status"/>
+        <result column="deadline" property="deadline"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM goal_task WHERE id = #{id}
+    </select>
+
+    <select id="selectByGoalId" resultMap="BaseResultMap">
+        SELECT * FROM goal_task WHERE goal_id = #{goalId} ORDER BY sort_order ASC, create_time DESC
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT * FROM goal_task WHERE user_id = #{userId} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM goal_task ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO goal_task (
+            goal_id, user_id, title, description, progress, status, deadline, sort_order
+        ) VALUES (
+            #{goalId}, #{userId}, #{title}, #{description}, #{progress}, #{status}, #{deadline}, #{sortOrder}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE goal_task SET
+            goal_id = #{goalId},
+            title = #{title},
+            description = #{description},
+            progress = #{progress},
+            status = #{status},
+            deadline = #{deadline},
+            sort_order = #{sortOrder}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateProgress">
+        UPDATE goal_task SET progress = #{progress} WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE goal_task SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM goal_task WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByGoalId">
+        DELETE FROM goal_task WHERE goal_id = #{goalId}
+    </delete>
+
+    <delete id="deleteByUserId">
+        DELETE FROM goal_task WHERE user_id = #{userId}
+    </delete>
+
+</mapper>
