@@ -12,9 +12,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/countdown")
@@ -65,7 +68,7 @@ public class CountdownController {
 
         List<Map<String, Object>> result = countdowns.stream()
                 .map(this::addRemainingTime)
-                .toList();
+                .collect(Collectors.toList());
 
         return Result.success(result);
     }
@@ -202,7 +205,7 @@ public class CountdownController {
 
     @GetMapping("/categories")
     public Result<List<String>> getCategories() {
-        List<String> categories = List.of("婚礼", "旅行", "考试", "纪念日", "发薪日", "其他");
+        List<String> categories = Arrays.asList("婚礼", "旅行", "考试", "纪念日", "发薪日", "其他");
         return Result.success(categories);
     }
 

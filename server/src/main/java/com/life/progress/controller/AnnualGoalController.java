@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/goal")
@@ -63,7 +65,7 @@ public class AnnualGoalController {
         List<AnnualGoal> goals = annualGoalService.findByUserIdAndYear(userId, year);
         List<Map<String, Object>> result = goals.stream()
                 .map(goal -> buildGoalWithProgress(goal, userId))
-                .toList();
+                .collect(Collectors.toList());
 
         return Result.success(result);
     }
