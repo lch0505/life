@@ -100,6 +100,35 @@ INSERT INTO `system_config` (`config_key`, `config_value`, `description`) VALUES
 ('site.description', '记录你的人生，规划你的未来', '网站描述'),
 ('life.expectancy', '80', '预期寿命（年）');
 
+-- 职场设置表
+CREATE TABLE IF NOT EXISTS `work_setting` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '设置ID',
+    `user_id` BIGINT NOT NULL COMMENT '用户ID',
+    `join_date` DATE COMMENT '入职日期',
+    `retirement_age` INT DEFAULT 65 COMMENT '退休年龄',
+    `monthly_salary` DECIMAL(12,2) COMMENT '月薪',
+    `work_days_per_week` INT DEFAULT 5 COMMENT '每周工作天数',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    UNIQUE KEY `uniq_user_id` (`user_id`),
+    INDEX `idx_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='职场设置表';
+
+-- 工作日志记录表
+CREATE TABLE IF NOT EXISTS `work_day_record` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '记录ID',
+    `user_id` BIGINT NOT NULL COMMENT '用户ID',
+    `work_date` DATE NOT NULL COMMENT '工作日期',
+    `status` TINYINT DEFAULT 1 COMMENT '状态：1-上班，2-摸鱼，3-休假',
+    `remark` VARCHAR(500) COMMENT '备注',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    UNIQUE KEY `uniq_user_date` (`user_id`, `work_date`),
+    INDEX `idx_user_id` (`user_id`),
+    INDEX `idx_work_date` (`work_date`),
+    INDEX `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='工作日志记录表';
+
 -- 插入测试用户（普通用户）
 INSERT INTO `user` (`username`, `password`, `nickname`, `email`, `phone`, `birth_date`, `role`, `status`) VALUES
 ('user1', '$2a$10$EqfY2qGQvW8Pydj3K4zU9O9r7d7j5d4k3j2h1g0f9e8d7c6b5a4s3d2f1g', '张三', 'zhangsan@example.com', '13800138001', '1990-01-15', 1, 1),

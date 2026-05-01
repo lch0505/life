@@ -55,6 +55,12 @@ const routes = [
         meta: { title: '个人设置' }
       },
       {
+        path: 'work',
+        name: 'Work',
+        component: () => import('@/views/work/index.vue'),
+        meta: { title: '职场进度' }
+      },
+      {
         path: 'admin',
         name: 'Admin',
         component: () => import('@/views/admin/index.vue'),

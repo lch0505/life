@@ -30,6 +30,10 @@
           <el-icon><Target /></el-icon>
           <template #title>年度目标</template>
         </el-menu-item>
+        <el-menu-item index="/dashboard/work">
+          <el-icon><Briefcase /></el-icon>
+          <template #title>职场进度</template>
+        </el-menu-item>
         <el-menu-item v-if="isAdmin" index="/dashboard/admin">
           <el-icon><Setting /></el-icon>
           <template #title>系统管理</template>
