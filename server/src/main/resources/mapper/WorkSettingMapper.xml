@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.life.progress.mapper.WorkSettingMapper">
+
+    <resultMap id="BaseResultMap" type="com.life.progress.entity.WorkSetting">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="join_date" property="joinDate"/>
+        <result column="retirement_age" property="retirementAge"/>
+        <result column="monthly_salary" property="monthlySalary"/>
+        <result column="work_days_per_week" property="workDaysPerWeek"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT * FROM work_setting WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO work_setting (
+            user_id, join_date, retirement_age, monthly_salary, work_days_per_week
+        ) VALUES (
+            #{userId}, #{joinDate}, #{retirementAge}, #{monthlySalary}, #{workDaysPerWeek}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE work_setting SET
+            join_date = #{joinDate},
+            retirement_age = #{retirementAge},
+            monthly_salary = #{monthlySalary},
+            work_days_per_week = #{workDaysPerWeek}
+        WHERE user_id = #{userId}
+    </update>
+
+    <delete id="deleteByUserId">
+        DELETE FROM work_setting WHERE user_id = #{userId}
+    </delete>
+
+</mapper>
