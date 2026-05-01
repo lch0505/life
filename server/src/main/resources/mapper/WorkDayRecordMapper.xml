@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.life.progress.mapper.WorkDayRecordMapper">
+
+    <resultMap id="BaseResultMap" type="com.life.progress.entity.WorkDayRecord">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="work_date" property="workDate"/>
+        <result column="status" property="status"/>
+        <result column="remark" property="remark"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM work_day_record WHERE id = #{id}
+    </select>
+
+    <select id="selectByUserIdAndDate" resultMap="BaseResultMap">
+        SELECT * FROM work_day_record WHERE user_id = #{userId} AND work_date = #{workDate}
+    </select>
+
+    <select id="selectByUserIdAndYear" resultMap="BaseResultMap">
+        SELECT * FROM work_day_record 
+        WHERE user_id = #{userId} AND YEAR(work_date) = #{year}
+        ORDER BY work_date ASC
+    </select>
+
+    <select id="selectByUserIdAndMonth" resultMap="BaseResultMap">
+        SELECT * FROM work_day_record 
+        WHERE user_id = #{userId} AND YEAR(work_date) = #{year} AND MONTH(work_date) = #{month}
+        ORDER BY work_date ASC
+    </select>
+
+    <select id="selectByUserIdAndDateRange" resultMap="BaseResultMap">
+        SELECT * FROM work_day_record 
+        WHERE user_id = #{userId} AND work_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY work_date ASC
+    </select>
+
+    <select id="countByUserIdAndStatus" resultType="int">
+        SELECT COUNT(*) FROM work_day_record 
+        WHERE user_id = #{userId} AND YEAR(work_date) = #{year} AND status = #{status}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO work_day_record (
+            user_id, work_date, status, remark
+        ) VALUES (
+            #{userId}, #{workDate}, #{status}, #{remark}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE work_day_record SET
+            status = #{status},
+            remark = #{remark}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM work_day_record WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByUserId">
+        DELETE FROM work_day_record WHERE user_id = #{userId}
+    </delete>
+
+</mapper>
