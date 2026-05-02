@@ -164,6 +164,24 @@ public class TalentServiceImpl implements TalentService {
         }
     }
 
+    // Helper method to create Map (Java 8 compatible alternative to Map.of)
+    private Map<String, Object> createMap(String key1, Object value1, String key2, Object value2, String key3, Object value3) {
+        Map<String, Object> map = new HashMap<>();
+        map.put(key1, value1);
+        map.put(key2, value2);
+        map.put(key3, value3);
+        return map;
+    }
+    
+    private Map<String, Object> createMap(String key1, Object value1, String key2, Object value2, String key3, Object value3, String key4, Object value4) {
+        Map<String, Object> map = new HashMap<>();
+        map.put(key1, value1);
+        map.put(key2, value2);
+        map.put(key3, value3);
+        map.put(key4, value4);
+        return map;
+    }
+
     // Simulation related methods
     private Random random = new Random();
 
@@ -226,10 +244,10 @@ public class TalentServiceImpl implements TalentService {
         result.put("level", level);
         result.put("events", events);
         result.put("talentBreakdown", Arrays.asList(
-            Map.of("name", "智商", "value", talent.getIntelligence(), "impact", "高"),
-            Map.of("name", "情商", "value", talent.getEmotional(), "impact", "高"),
-            Map.of("name", "财运", "value", talent.getWealth(), "impact", "中"),
-            Map.of("name", "运气", "value", talent.getLuck(), "impact", "中")
+            createMap("name", "智商", "value", talent.getIntelligence(), "impact", "高"),
+            createMap("name", "情商", "value", talent.getEmotional(), "impact", "高"),
+            createMap("name", "财运", "value", talent.getWealth(), "impact", "中"),
+            createMap("name", "运气", "value", talent.getLuck(), "impact", "中")
         ));
         
         saveSimulationLog(userId, "career", result, talent);
@@ -300,9 +318,9 @@ public class TalentServiceImpl implements TalentService {
         result.put("level", level);
         result.put("events", events);
         result.put("talentBreakdown", Arrays.asList(
-            Map.of("name", "颜值", "value", talent.getAppearance(), "impact", "高"),
-            Map.of("name", "情商", "value", talent.getEmotional(), "impact", "高"),
-            Map.of("name", "运气", "value", talent.getLuck(), "impact", "中")
+            createMap("name", "颜值", "value", talent.getAppearance(), "impact", "高"),
+            createMap("name", "情商", "value", talent.getEmotional(), "impact", "高"),
+            createMap("name", "运气", "value", talent.getLuck(), "impact", "中")
         ));
         
         saveSimulationLog(userId, "relationship", result, talent);
@@ -373,8 +391,8 @@ public class TalentServiceImpl implements TalentService {
         result.put("level", level);
         result.put("events", events);
         result.put("talentBreakdown", Arrays.asList(
-            Map.of("name", "健康", "value", talent.getHealth(), "impact", "高"),
-            Map.of("name", "运气", "value", talent.getLuck(), "impact", "中")
+            createMap("name", "健康", "value", talent.getHealth(), "impact", "高"),
+            createMap("name", "运气", "value", talent.getLuck(), "impact", "中")
         ));
         
         saveSimulationLog(userId, "health", result, talent);
@@ -438,9 +456,9 @@ public class TalentServiceImpl implements TalentService {
         result.put("level", level);
         result.put("events", events);
         result.put("talentBreakdown", Arrays.asList(
-            Map.of("name", "财运", "value", talent.getWealth(), "impact", "高"),
-            Map.of("name", "智商", "value", talent.getIntelligence(), "impact", "中"),
-            Map.of("name", "运气", "value", talent.getLuck(), "impact", "高")
+            createMap("name", "财运", "value", talent.getWealth(), "impact", "高"),
+            createMap("name", "智商", "value", talent.getIntelligence(), "impact", "中"),
+            createMap("name", "运气", "value", talent.getLuck(), "impact", "高")
         ));
         
         saveSimulationLog(userId, "wealth", result, talent);
@@ -511,10 +529,10 @@ public class TalentServiceImpl implements TalentService {
         result.put("maxPossible", maxPossible);
         result.put("level", level);
         result.put("breakdown", Arrays.asList(
-            Map.of("name", "事业", "score", careerScore, "level", career.get("level")),
-            Map.of("name", "感情", "score", relationshipScore, "level", relationship.get("level")),
-            Map.of("name", "健康", "score", healthScore, "level", health.get("level")),
-            Map.of("name", "财富", "score", wealthScore, "level", wealth.get("level"))
+            createMap("name", "事业", "score", careerScore, "level", career.get("level")),
+            createMap("name", "感情", "score", relationshipScore, "level", relationship.get("level")),
+            createMap("name", "健康", "score", healthScore, "level", health.get("level")),
+            createMap("name", "财富", "score", wealthScore, "level", wealth.get("level"))
         ));
         result.put("summary", generateOverallSummary(totalScore, maxPossible, talent));
         
@@ -647,12 +665,12 @@ public class TalentServiceImpl implements TalentService {
         stats.put("averagePointsUsed", String.format("%.2f", (double) totalPointsUsed / userCount));
         
         stats.put("averages", Arrays.asList(
-            Map.of("name", "颜值", "average", String.format("%.2f", (double) totalAppearance / userCount), "max", maxAppearance),
-            Map.of("name", "智商", "average", String.format("%.2f", (double) totalIntelligence / userCount), "max", maxIntelligence),
-            Map.of("name", "财运", "average", String.format("%.2f", (double) totalWealth / userCount), "max", maxWealth),
-            Map.of("name", "健康", "average", String.format("%.2f", (double) totalHealth / userCount), "max", maxHealth),
-            Map.of("name", "情商", "average", String.format("%.2f", (double) totalEmotional / userCount), "max", maxEmotional),
-            Map.of("name", "运气", "average", String.format("%.2f", (double) totalLuck / userCount), "max", maxLuck)
+            createMap("name", "颜值", "average", String.format("%.2f", (double) totalAppearance / userCount), "max", maxAppearance),
+            createMap("name", "智商", "average", String.format("%.2f", (double) totalIntelligence / userCount), "max", maxIntelligence),
+            createMap("name", "财运", "average", String.format("%.2f", (double) totalWealth / userCount), "max", maxWealth),
+            createMap("name", "健康", "average", String.format("%.2f", (double) totalHealth / userCount), "max", maxHealth),
+            createMap("name", "情商", "average", String.format("%.2f", (double) totalEmotional / userCount), "max", maxEmotional),
+            createMap("name", "运气", "average", String.format("%.2f", (double) totalLuck / userCount), "max", maxLuck)
         ));
         
         return stats;
