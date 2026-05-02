@@ -5,77 +5,145 @@
         <el-card class="talent-allocation-card">
           <template #header>
             <div class="card-header">
-            <div class="header-title">
-              <span class="title-icon">🌟</span>
-              <span class="title-text">天赋加点</span>
+              <div class="header-title">
+                <span class="title-icon">🌟</span>
+                <span class="title-text">天赋加点</span>
+              </div>
+              <div class="header-actions">
+                <el-button type="primary" size="small" plain @click="handleQuickAllocate">
+                  <el-icon><MagicStick /></el-icon>
+                  一键分配
+                </el-button>
+                <el-button type="warning" size="small" plain @click="handleRandomAllocate">
+                  <el-icon><Dice /></el-icon>
+                  随机分配
+                </el-button>
+                <el-button type="danger" size="small" plain @click="handleReset" :disabled="isAllocating">
+                  重置
+                </el-button>
+              </div>
             </div>
-            <div class="points-info">
-              <span class="points-label">已分配:</span>
-              <span class="points-value used">{{ userTalent.totalPointsUsed || 0 }}</span>
-              <span class="points-separator">/</span>
-              <span class="points-value total">{{ talentConfig.totalPoints || 20 }}</span>
-              <span class="points-label">点</span>
-              <el-button 
-                type="danger" 
-                size="small" 
-                plain
-                @click="handleReset"
-                :disabled="isAllocating"
+          </template>
+
+          <div class="points-overview">
+            <div class="points-circle">
+              <el-progress
+                type="dashboard"
+                :percentage="pointsPercentage"
+                :width="120"
+                :stroke-width="12"
+                :color="pointsColor"
               >
-                重置
-              </el-button>
+                <div class="circle-content">
+                  <span class="circle-used">{{ totalUsed }}</span>
+                  <span class="circle-separator">/</span>
+                  <span class="circle-total">{{ talentConfig.totalPoints }}</span>
+                </div>
+              </el-progress>
+            </div>
+            
+            <div class="points-details">
+              <div class="detail-item used">
+                <div class="detail-label">已分配点数</div>
+                <div class="detail-value">{{ totalUsed }}</div>
+                <div class="detail-bar">
+                  <div class="bar-inner used" :style="{ width: pointsPercentage + '%' }"></div>
+                </div>
+              </div>
+              
+              <div class="detail-item remaining">
+                <div class="detail-label">剩余点数</div>
+                <div class="detail-value highlight">{{ remainingPoints }}</div>
+                <div class="detail-bar">
+                  <div class="bar-inner remaining" :style="{ width: remainingPercentage + '%' }"></div>
+                </div>
+              </div>
+              
+              <div class="detail-tip" v-if="remainingPoints > 0">
+                <el-icon><InfoFilled /></el-icon>
+                <span>还有 <strong>{{ remainingPoints }}</strong> 点天赋可以分配！</span>
+              </div>
+              <div class="detail-tip success" v-else-if="remainingPoints === 0">
+                <el-icon><CircleCheckFilled /></el-icon>
+                <span>天赋已全部分配完成！</span>
+              </div>
             </div>
           </div>
-          </template>
 
           <div class="talent-sliders">
             <div 
               v-for="talent in talentList" 
               :key="talent.key" 
               class="talent-slider-item"
-              :class="{ 'active': activeTalent === talent.key }"
+              :class="{ 
+                'active': activeTalent === talent.key,
+                'has-points': tempTalent[talent.key] > 0,
+                'can-add': canAddMore(talent.key) === false && remainingPoints > 0
+              }"
               @mouseenter="activeTalent = talent.key"
               @mouseleave="activeTalent = null"
             >
               <div class="talent-header">
                 <div class="talent-left">
-                  <span class="talent-icon">{{ talent.icon }}</span>
-                  <span class="talent-name">{{ talent.name }}</span>
+                  <div class="talent-icon-wrapper">
+                    <span class="talent-icon">{{ talent.icon }}</span>
+                  </div>
+                  <div class="talent-info">
+                    <span class="talent-name">{{ talent.name }}</span>
+                    <span class="talent-description">{{ talent.description }}</span>
+                  </div>
                 </div>
+                
                 <div class="talent-right">
-                  <el-button 
-                    class="slider-btn" 
-                    size="small" 
-                    circle
-                    :disabled="getTalentValue(talent.key) <= talentConfig.minPerTalent"
-                    @click="adjustTalent(talent.key, -1)"
-                  >
-                    -
-                  </el-button>
-                  <span class="talent-value-display">{{ getTalentValue(talent.key) }}</span>
-                  <el-button 
-                    class="slider-btn" 
-                    size="small" 
-                    circle
-                    :disabled="canAddMore(talent.key)"
-                    @click="adjustTalent(talent.key, 1)"
-                  >
-                    +
-                  </el-button>
+                  <div class="talent-value-control">
+                    <el-button 
+                      class="control-btn minus" 
+                      size="small" 
+                      circle
+                      :disabled="tempTalent[talent.key] <= talentConfig.minPerTalent"
+                      @click="adjustTalent(talent.key, -1)"
+                    >
+                      <span class="btn-text">-</span>
+                    </el-button>
+                    
+                    <div class="value-display">
+                      <span class="current-value">{{ tempTalent[talent.key] }}</span>
+                      <span class="max-indicator">/{{ talentConfig.maxPerTalent }}</span>
+                    </div>
+                    
+                    <el-button 
+                      class="control-btn plus" 
+                      size="small" 
+                      circle
+                      :disabled="canAddMore(talent.key)"
+                      @click="adjustTalent(talent.key, 1)"
+                    >
+                      <span class="btn-text">+</span>
+                    </el-button>
+                  </div>
                 </div>
               </div>
               
-              <el-slider
-                v-model="tempTalent[talent.key]"
-                :min="talentConfig.minPerTalent"
-                :max="talentConfig.maxPerTalent"
-                :show-tooltip="false"
-                :marks="sliderMarks"
-                @change="onSliderChange(talent.key)"
-              />
-              
-              <div class="talent-description">
-                {{ talent.description }}
+              <div class="slider-wrapper">
+                <el-slider
+                  v-model="tempTalent[talent.key]"
+                  :min="talentConfig.minPerTalent"
+                  :max="calculateMaxForSlider(talent.key)"
+                  :show-tooltip="false"
+                  :marks="sliderMarks"
+                  :disabled="false"
+                  @input="onSliderInput(talent.key)"
+                  @change="onSliderChange(talent.key)"
+                />
+                
+                <div class="slider-mini-bars" v-if="tempTalent[talent.key] > 0">
+                  <div 
+                    v-for="i in talentConfig.maxPerTalent" 
+                    :key="i"
+                    class="mini-bar"
+                    :class="{ 'filled': i <= tempTalent[talent.key] }"
+                  ></div>
+                </div>
               </div>
             </div>
           </div>
@@ -87,12 +155,14 @@
               :loading="isAllocating"
               @click="handleSave"
             >
+              <el-icon><Check /></el-icon>
               保存分配
             </el-button>
             <el-button 
               size="large"
               @click="handleCancel"
             >
+              <el-icon><Refresh /></el-icon>
               取消修改
             </el-button>
           </div>
@@ -174,8 +244,8 @@
 
       <div class="simulation-content">
         <div v-if="!simulationResult" class="simulation-empty">
-          <el-empty description="点击下方按钮开始模拟你的人生模拟">
-            <el-button type="primary" @click="runSimulation">
+          <el-empty description="点击下方按钮开始模拟你的人生">
+            <el-button type="primary" size="large" @click="runSimulation">
               <span class="simulate-btn-text">开始模拟</span>
             </el-button>
           </el-empty>
@@ -317,6 +387,25 @@ const totalUsed = computed(() => {
   return Object.values(tempTalent.value).reduce((sum, val) => sum + val, 0)
 })
 
+const remainingPoints = computed(() => {
+  return talentConfig.value.totalPoints - totalUsed.value
+})
+
+const pointsPercentage = computed(() => {
+  return Math.round((totalUsed.value / talentConfig.value.totalPoints) * 100)
+})
+
+const remainingPercentage = computed(() => {
+  return Math.round((remainingPoints.value / talentConfig.value.totalPoints) * 100)
+})
+
+const pointsColor = computed(() => {
+  if (pointsPercentage.value >= 80) return '#67c23a'
+  if (pointsPercentage.value >= 60) return '#409EFF'
+  if (pointsPercentage.value >= 40) return '#e6a23c'
+  return '#909399'
+})
+
 const analysisList = computed(() => {
   const talent = tempTalent.value
   const max = talentConfig.value.maxPerTalent
@@ -369,22 +458,28 @@ const getTalentValue = (key) => {
 const canAddMore = (key) => {
   const currentValue = tempTalent.value[key]
   const maxPerTalent = talentConfig.value.maxPerTalent
-  const totalPoints = talentConfig.value.totalPoints
   
   if (currentValue >= maxPerTalent) return true
-  if (totalUsed.value >= totalPoints) return true
+  if (remainingPoints.value <= 0) return true
   return false
+}
+
+const calculateMaxForSlider = (key) => {
+  const currentValue = tempTalent.value[key]
+  const maxPerTalent = talentConfig.value.maxPerTalent
+  const totalRemaining = remainingPoints.value + currentValue
+  
+  return Math.min(maxPerTalent, totalRemaining)
 }
 
 const adjustTalent = (key, delta) => {
   const newValue = tempTalent.value[key] + delta
   const maxPerTalent = talentConfig.value.maxPerTalent
   const minPerTalent = talentConfig.value.minPerTalent
-  const totalPoints = talentConfig.value.totalPoints
   
   if (delta > 0) {
     if (newValue > maxPerTalent) return
-    if (totalUsed.value >= totalPoints) return
+    if (remainingPoints.value <= 0) return
   } else {
     if (newValue < minPerTalent) return
   }
@@ -393,8 +488,57 @@ const adjustTalent = (key, delta) => {
   updateRadarChart()
 }
 
+const onSliderInput = (key) => {
+  updateRadarChart()
+}
+
 const onSliderChange = (key) => {
   updateRadarChart()
+}
+
+const handleQuickAllocate = () => {
+  const maxPer = talentConfig.value.maxPerTalent
+  const total = talentConfig.value.totalPoints
+  
+  talentList.forEach(talent => {
+    tempTalent.value[talent.key] = 0
+  })
+  
+  let remaining = total
+  for (let i = 0; i < maxPer && remaining > 0; i++) {
+    for (const talent of talentList) {
+      if (remaining > 0 && tempTalent.value[talent.key] < maxPer) {
+        tempTalent.value[talent.key]++
+        remaining--
+      }
+    }
+  }
+  
+  updateRadarChart()
+  ElMessage.success('已一键均衡分配天赋点！')
+}
+
+const handleRandomAllocate = () => {
+  const maxPer = talentConfig.value.maxPerTalent
+  const total = talentConfig.value.totalPoints
+  
+  talentList.forEach(talent => {
+    tempTalent.value[talent.key] = 0
+  })
+  
+  let remaining = total
+  const keys = talentList.map(t => t.key)
+  
+  while (remaining > 0) {
+    const randomKey = keys[Math.floor(Math.random() * keys.length)]
+    if (tempTalent.value[randomKey] < maxPer) {
+      tempTalent.value[randomKey]++
+      remaining--
+    }
+  }
+  
+  updateRadarChart()
+  ElMessage.success('已随机分配天赋点！')
 }
 
 const fetchUserTalent = async () => {
@@ -665,6 +809,11 @@ onMounted(() => {
       align-items: center;
     }
 
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
     .title-icon {
       margin-right: 8px;
       font-size: 18px;
@@ -675,50 +824,173 @@ onMounted(() => {
     }
   }
 
-  .points-info {
+  .points-overview {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    gap: 24px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    margin-bottom: 24px;
 
-    .points-label {
-      font-size: 14px;
-      color: #666;
-    }
-
-    .points-value {
-      font-size: 20px;
-      font-weight: 600;
-
-      &.used {
-        color: #409EFF;
+    .points-circle {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      :deep(.el-progress-circle) {
+        svg {
+          width: 120px !important;
+          height: 120px !important;
+        }
       }
 
-      &.total {
-        color: #909399;
+      .circle-content {
+        position: absolute;
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        gap: 2px;
+
+        .circle-used {
+          font-size: 28px;
+          font-weight: 700;
+          color: #fff;
+        }
+
+        .circle-separator {
+          font-size: 16px;
+          color: rgba(255, 255, 255, 0.7);
+        }
+
+        .circle-total {
+          font-size: 16px;
+          color: rgba(255, 255, 255, 0.7);
+        }
       }
     }
 
-    .points-separator {
-      color: #909399;
-      font-size: 16px;
+    .points-details {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+
+        &.used {
+          .detail-value {
+            color: #fff;
+          }
+        }
+
+        &.remaining {
+          .detail-value {
+            color: #ffd700;
+          }
+        }
+
+        .detail-label {
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.8);
+          width: 80px;
+        }
+
+        .detail-value {
+          font-size: 24px;
+          font-weight: 700;
+          width: 50px;
+
+          &.highlight {
+            animation: pulse 2s infinite;
+          }
+        }
+
+        .detail-bar {
+          flex: 1;
+          height: 8px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 4px;
+          overflow: hidden;
+
+          .bar-inner {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+
+            &.used {
+              background: linear-gradient(90deg, #409EFF, #67c23a);
+            }
+
+            &.remaining {
+              background: linear-gradient(90deg, #ffd700, #ffed4e);
+            }
+          }
+        }
+      }
+
+      .detail-tip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 6px;
+        margin-top: 8px;
+
+        .el-icon {
+          font-size: 16px;
+          color: #ffd700;
+        }
+
+        span {
+          font-size: 14px;
+          color: #fff;
+
+          strong {
+            font-size: 16px;
+            color: #ffd700;
+          }
+        }
+
+        &.success {
+          .el-icon {
+            color: #67c23a;
+          }
+
+          strong {
+            color: #67c23a;
+          }
+        }
+      }
     }
   }
 
   .talent-sliders {
     .talent-slider-item {
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 8px;
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin-bottom: 12px;
       transition: all 0.3s ease;
-      border: 1px solid #f0f0f0;
+      border: 2px solid #f0f0f0;
+      background: #fff;
 
       &.active {
         background: #f5f7fa;
         border-color: #409EFF;
+        box-shadow: 0 4px 12px rgba(64, 158, 255, 0.15);
       }
 
-      &:hover {
-        background: #fafafa;
+      &.has-points {
+        border-left: 4px solid #409EFF;
+      }
+
+      &.can-add {
+        border-color: #67c23a;
       }
 
       .talent-header {
@@ -730,45 +1002,139 @@ onMounted(() => {
         .talent-left {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 12px;
 
-          .talent-icon {
-            font-size: 20px;
+          .talent-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
           }
 
-          .talent-name {
-            font-size: 15px;
-            font-weight: 500;
-            color: #333;
+          .talent-icon {
+            font-size: 24px;
+          }
+
+          .talent-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+
+            .talent-name {
+              font-size: 16px;
+              font-weight: 600;
+              color: #333;
+            }
+
+            .talent-description {
+              font-size: 12px;
+              color: #909399;
+            }
           }
         }
 
         .talent-right {
-          display: flex;
-          align-items: center;
-          gap: 8px;
+          .talent-value-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
 
-          .slider-btn {
-            width: 28px;
-            height: 28px;
-            padding: 0;
-          }
+            .control-btn {
+              width: 32px;
+              height: 32px;
+              padding: 0;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border-radius: 8px;
+              transition: all 0.2s ease;
 
-          .talent-value-display {
-            font-size: 18px;
-            font-weight: 600;
-            color: #409EFF;
-            min-width: 30px;
-            text-align: center;
+              &.minus {
+                background: #fef0f0;
+                border-color: #fbc4c4;
+
+                &:hover:not(:disabled) {
+                  background: #fde2e2;
+                }
+
+                .btn-text {
+                  color: #f56c6c;
+                  font-size: 20px;
+                  font-weight: 600;
+                }
+              }
+
+              &.plus {
+                background: #f0f9eb;
+                border-color: #c2e7b0;
+
+                &:hover:not(:disabled) {
+                  background: #e1f3d8;
+                }
+
+                .btn-text {
+                  color: #67c23a;
+                  font-size: 20px;
+                  font-weight: 600;
+                }
+              }
+
+              &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+              }
+            }
+
+            .value-display {
+              display: flex;
+              align-items: baseline;
+              gap: 2px;
+              padding: 8px 16px;
+              background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
+              border-radius: 8px;
+              min-width: 60px;
+              text-align: center;
+
+              .current-value {
+                font-size: 24px;
+                font-weight: 700;
+                color: #409EFF;
+              }
+
+              .max-indicator {
+                font-size: 12px;
+                color: #909399;
+              }
+            }
           }
         }
       }
 
-      .talent-description {
-        font-size: 12px;
-        color: #909399;
-        margin-top: 8px;
-        padding-left: 28px;
+      .slider-wrapper {
+        padding: 0 8px;
+
+        .slider-mini-bars {
+          display: flex;
+          gap: 4px;
+          margin-top: 8px;
+          height: 6px;
+
+          .mini-bar {
+            flex: 1;
+            background: #f0f0f0;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+
+            &.filled {
+              background: linear-gradient(90deg, #409EFF, #67c23a);
+              box-shadow: 0 0 4px rgba(64, 158, 255, 0.3);
+            }
+          }
+        }
       }
     }
   }
@@ -954,6 +1320,15 @@ onMounted(() => {
         line-height: 1.8;
       }
     }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
   }
 }
 </style>
