@@ -44,29 +44,6 @@ export const getEarnings = () => {
   })
 }
 
-export const getDayRecord = (date) => {
-  return request({
-    url: `/work/day/${date}`,
-    method: 'get'
-  })
-}
-
-export const saveDayRecord = (data) => {
-  return request({
-    url: '/work/day',
-    method: 'post',
-    data
-  })
-}
-
-export const getMonthRecords = (year, month) => {
-  return request({
-    url: '/work/month',
-    method: 'get',
-    params: { year, month }
-  })
-}
-
 export const getAllWorkProgress = () => {
   return request({
     url: '/work/all',

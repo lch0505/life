@@ -248,27 +248,6 @@
           </el-card>
         </el-col>
       </el-row>
-
-      <el-card class="work-card">
-        <template #header>
-          <div class="card-header">
-            <span>📅 工作日志</span>
-            <el-button type="primary" size="small" @click="openDayRecordDialog">
-              <el-icon><Plus /></el-icon>
-              记录今天
-            </el-button>
-          </div>
-        </template>
-        <div class="calendar-section">
-          <el-calendar v-model="selectedDate">
-            <template #date-cell="{ data }">
-              <div class="calendar-cell" @click="selectDate(data)">
-                <span :class="getDayClass(data)">{{ getDayStatusText(data) }}</span>
-              </div>
-            </template>
-          </el-calendar>
-        </div>
-      </el-card>
     </template>
 
     <el-dialog
@@ -320,60 +299,17 @@
         <el-button type="primary" :loading="submitLoading" @click="submitSetting">保存</el-button>
       </template>
     </el-dialog>
-
-    <el-dialog
-      v-model="dayRecordDialogVisible"
-      title="记录工作状态"
-      width="400px"
-    >
-      <el-form
-        ref="dayRecordFormRef"
-        :model="dayRecordForm"
-        label-width="80px"
-      >
-        <el-form-item label="日期">
-          <el-date-picker
-            v-model="dayRecordForm.workDate"
-            type="date"
-            placeholder="选择日期"
-            style="width: 100%"
-            value-format="YYYY-MM-DD"
-          />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="dayRecordForm.status">
-            <el-radio :value="1">💼 上班</el-radio>
-            <el-radio :value="2">🐟 摸鱼</el-radio>
-            <el-radio :value="3">🏖️ 休假</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="备注">
-          <el-input
-            v-model="dayRecordForm.remark"
-            type="textarea"
-            :rows="2"
-            placeholder="备注（选填）"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="dayRecordDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitDayRecord">保存</el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElForm } from 'element-plus'
 import {
   getWorkSetting,
   saveWorkSetting,
   getAllWorkProgress,
-  getYearlyStats,
-  getMonthRecords,
-  saveDayRecord
+  getYearlyStats
 } from '@/api/work'
 
 const hasSetting = ref(false)
@@ -383,8 +319,6 @@ const yearlyStats = ref({})
 const earnings = ref({})
 const setting = ref({})
 const selectedYear = ref(new Date().getFullYear())
-const selectedDate = ref(new Date())
-const monthRecords = ref([])
 let countdownTimer = null
 
 const yearOptions = computed(() => {
@@ -408,22 +342,14 @@ const displayWorkedMonths = computed(() => {
 })
 
 const settingDialogVisible = ref(false)
-const dayRecordDialogVisible = ref(false)
 const submitLoading = ref(false)
 const settingFormRef = ref(null)
-const dayRecordFormRef = ref(null)
 
 const settingForm = reactive({
   joinDate: '',
   retirementAge: 65,
   monthlySalary: 0,
   workDaysPerWeek: 5
-})
-
-const dayRecordForm = reactive({
-  workDate: '',
-  status: 1,
-  remark: ''
 })
 
 const settingRules = {
@@ -443,71 +369,6 @@ const formatNumber = (num) => {
     num = parseFloat(num)
   }
   return num.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
-
-const formatWorkDate = (workDate) => {
-  if (!workDate) return null
-  
-  if (workDate instanceof Date) {
-    const y = workDate.getFullYear()
-    const m = (workDate.getMonth() + 1).toString().padStart(2, '0')
-    const d = workDate.getDate().toString().padStart(2, '0')
-    return `${y}-${m}-${d}`
-  }
-  
-  if (Array.isArray(workDate) && workDate.length >= 3) {
-    const y = workDate[0]
-    const m = workDate[1].toString().padStart(2, '0')
-    const d = workDate[2].toString().padStart(2, '0')
-    return `${y}-${m}-${d}`
-  }
-  
-  if (typeof workDate === 'string') {
-    if (workDate.includes('T')) {
-      return workDate.split('T')[0]
-    }
-    if (/^\d{4}-\d{2}-\d{2}$/.test(workDate)) {
-      return workDate
-    }
-  }
-  
-  return null
-}
-
-const getDayStatusText = (day) => {
-  if (day.type === 'prev-month' || day.type === 'next-month') {
-    return day.day
-  }
-  
-  const currentYear = selectedDate.value.getFullYear()
-  const currentMonth = selectedDate.value.getMonth() + 1
-  const dayNum = parseInt(day.day)
-  
-  const formattedMonth = currentMonth.toString().padStart(2, '0')
-  const formattedDay = dayNum.toString().padStart(2, '0')
-  const targetDateStr = `${currentYear}-${formattedMonth}-${formattedDay}`
-  
-  const record = monthRecords.value.find(r => {
-    const workDateStr = formatWorkDate(r.workDate)
-    return workDateStr === targetDateStr
-  })
-  
-  if (record) {
-    const statusIcons = { 1: '💼', 2: '🐟', 3: '🏖️' }
-    return statusIcons[record.status] || day.day
-  }
-  return day.day
-}
-
-const getDayClass = (data) => {
-  const classes = []
-  if (data.type === 'prev-month' || data.type === 'next-month') {
-    classes.push('other-month')
-  }
-  if (data.isSelected) {
-    classes.push('selected')
-  }
-  return classes
 }
 
 const openSettingDialog = async () => {
@@ -548,54 +409,6 @@ const submitSetting = async () => {
   }
 }
 
-const openDayRecordDialog = () => {
-  const today = new Date()
-  dayRecordForm.workDate = today.toISOString().split('T')[0]
-  dayRecordForm.status = 1
-  dayRecordForm.remark = ''
-  dayRecordDialogVisible.value = true
-}
-
-const selectDate = (day) => {
-  if (day.type === 'prev-month' || day.type === 'next-month') return
-  
-  const currentYear = selectedDate.value.getFullYear()
-  const currentMonth = selectedDate.value.getMonth() + 1
-  const dayNum = parseInt(day.day)
-  
-  const formattedMonth = currentMonth.toString().padStart(2, '0')
-  const formattedDay = dayNum.toString().padStart(2, '0')
-  const targetDateStr = `${currentYear}-${formattedMonth}-${formattedDay}`
-  
-  const record = monthRecords.value.find(r => {
-    return r.workDate === targetDateStr || 
-           (r.workDate && r.workDate.startsWith(targetDateStr))
-  })
-  
-  dayRecordForm.workDate = targetDateStr
-  dayRecordForm.status = record?.status || 1
-  dayRecordForm.remark = record?.remark || ''
-  
-  dayRecordDialogVisible.value = true
-}
-
-const submitDayRecord = async () => {
-  try {
-    const data = {
-      workDate: dayRecordForm.workDate,
-      status: dayRecordForm.status,
-      remark: dayRecordForm.remark || undefined
-    }
-    await saveDayRecord(data)
-    ElMessage.success('保存成功')
-    dayRecordDialogVisible.value = false
-    fetchMonthRecords()
-    fetchYearlyStats()
-  } catch (error) {
-    console.error('保存记录失败:', error)
-  }
-}
-
 const fetchAllData = async () => {
   try {
     const res = await getAllWorkProgress()
@@ -617,17 +430,6 @@ const fetchYearlyStats = async () => {
     yearlyStats.value = res.data || {}
   } catch (error) {
     console.error('获取年度统计失败:', error)
-  }
-}
-
-const fetchMonthRecords = async () => {
-  try {
-    const year = selectedDate.value.getFullYear()
-    const month = selectedDate.value.getMonth() + 1
-    const res = await getMonthRecords(year, month)
-    monthRecords.value = res.data || []
-  } catch (error) {
-    console.error('获取月度记录失败:', error)
   }
 }
 
@@ -660,13 +462,8 @@ const startCountdownTimer = () => {
   }, 1000)
 }
 
-watch(selectedDate, () => {
-  fetchMonthRecords()
-})
-
 onMounted(() => {
   fetchAllData()
-  fetchMonthRecords()
 })
 
 onUnmounted(() => {
@@ -1003,40 +800,5 @@ onUnmounted(() => {
     }
   }
 
-  .calendar-section {
-    :deep(.el-calendar) {
-      .el-calendar-table {
-        .el-calendar-day {
-          height: 60px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          &:hover {
-            background: #ecf5ff;
-          }
-
-          .calendar-cell {
-            text-align: center;
-            cursor: pointer;
-
-            span {
-              display: block;
-              font-size: 14px;
-
-              &.other-month {
-                color: #c0c4cc;
-              }
-
-              &.selected {
-                color: #409eff;
-                font-weight: 600;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
 }
 </style>
