@@ -263,7 +263,7 @@
           <el-calendar v-model="selectedDate">
             <template #date-cell="{ data }">
               <div class="calendar-cell" @click="selectDate(data)">
-                <span :class="getDayClass(data)">{{ getDayStatusText(data.day) }}</span>
+                <span :class="getDayClass(data)">{{ getDayStatusText(data) }}</span>
               </div>
             </template>
           </el-calendar>
@@ -445,6 +445,35 @@ const formatNumber = (num) => {
   return num.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
+const formatWorkDate = (workDate) => {
+  if (!workDate) return null
+  
+  if (workDate instanceof Date) {
+    const y = workDate.getFullYear()
+    const m = (workDate.getMonth() + 1).toString().padStart(2, '0')
+    const d = workDate.getDate().toString().padStart(2, '0')
+    return `${y}-${m}-${d}`
+  }
+  
+  if (Array.isArray(workDate) && workDate.length >= 3) {
+    const y = workDate[0]
+    const m = workDate[1].toString().padStart(2, '0')
+    const d = workDate[2].toString().padStart(2, '0')
+    return `${y}-${m}-${d}`
+  }
+  
+  if (typeof workDate === 'string') {
+    if (workDate.includes('T')) {
+      return workDate.split('T')[0]
+    }
+    if (/^\d{4}-\d{2}-\d{2}$/.test(workDate)) {
+      return workDate
+    }
+  }
+  
+  return null
+}
+
 const getDayStatusText = (day) => {
   if (day.type === 'prev-month' || day.type === 'next-month') {
     return day.day
@@ -459,8 +488,8 @@ const getDayStatusText = (day) => {
   const targetDateStr = `${currentYear}-${formattedMonth}-${formattedDay}`
   
   const record = monthRecords.value.find(r => {
-    return r.workDate === targetDateStr || 
-           (r.workDate && r.workDate.startsWith(targetDateStr))
+    const workDateStr = formatWorkDate(r.workDate)
+    return workDateStr === targetDateStr
   })
   
   if (record) {
