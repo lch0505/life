@@ -51,10 +51,10 @@ public class LifeEventAdminController {
     }
 
     @DeleteMapping("/config/{id}")
-    public Result<Void> deleteConfig(@PathVariable Long id) {
+    public Result<Object> deleteConfig(@PathVariable Long id) {
         boolean success = lifeEventService.deleteEventConfig(id);
         if (success) {
-            return Result.success("删除成功");
+            return Result.success("删除成功", null);
         }
         return Result.error("删除失败");
     }
