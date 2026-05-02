@@ -67,6 +67,12 @@ const routes = [
         meta: { title: '天赋加点' }
       },
       {
+        path: 'life-event',
+        name: 'LifeEvent',
+        component: () => import('@/views/life-event/index.vue'),
+        meta: { title: '随机人生事件' }
+      },
+      {
         path: 'admin',
         name: 'Admin',
         component: () => import('@/views/admin/index.vue'),

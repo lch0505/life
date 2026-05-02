@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.life.progress.mapper.LifeEventConfigMapper">
+
+    <resultMap id="BaseResultMap" type="com.life.progress.entity.LifeEventConfig">
+        <id column="id" property="id"/>
+        <result column="event_type" property="eventType"/>
+        <result column="event_name" property="eventName"/>
+        <result column="event_description" property="eventDescription"/>
+        <result column="icon" property="icon"/>
+        <result column="color" property="color"/>
+        <result column="impact_type" property="impactType"/>
+        <result column="impact_value" property="impactValue"/>
+        <result column="weight" property="weight"/>
+        <result column="min_days" property="minDays"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM life_event_config WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM life_event_config ORDER BY event_type, weight DESC
+    </select>
+
+    <select id="selectByEventType" resultMap="BaseResultMap">
+        SELECT * FROM life_event_config WHERE event_type = #{eventType} ORDER BY weight DESC
+    </select>
+
+    <select id="selectActive" resultMap="BaseResultMap">
+        SELECT * FROM life_event_config WHERE status = 1 ORDER BY event_type, weight DESC
+    </select>
+
+    <select id="selectActiveByType" resultMap="BaseResultMap">
+        SELECT * FROM life_event_config WHERE status = 1 AND event_type = #{eventType} ORDER BY weight DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO life_event_config (
+            event_type, event_name, event_description, icon, color, 
+            impact_type, impact_value, weight, min_days, status
+        ) VALUES (
+            #{eventType}, #{eventName}, #{eventDescription}, #{icon}, #{color},
+            #{impactType}, #{impactValue}, #{weight}, #{minDays}, #{status}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE life_event_config SET
+            event_type = #{eventType},
+            event_name = #{eventName},
+            event_description = #{eventDescription},
+            icon = #{icon},
+            color = #{color},
+            impact_type = #{impactType},
+            impact_value = #{impactValue},
+            weight = #{weight},
+            min_days = #{minDays},
+            status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM life_event_config WHERE id = #{id}
+    </delete>
+
+</mapper>

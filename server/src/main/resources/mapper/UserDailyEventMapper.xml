@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.life.progress.mapper.UserDailyEventMapper">
+
+    <resultMap id="BaseResultMap" type="com.life.progress.entity.UserDailyEvent">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="event_id" property="eventId"/>
+        <result column="event_date" property="eventDate"/>
+        <result column="event_type" property="eventType"/>
+        <result column="event_name" property="eventName"/>
+        <result column="event_description" property="eventDescription"/>
+        <result column="impact_type" property="impactType"/>
+        <result column="impact_value" property="impactValue"/>
+        <result column="is_applied" property="isApplied"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM user_daily_event WHERE id = #{id}
+    </select>
+
+    <select id="selectByUserAndDate" resultMap="BaseResultMap">
+        SELECT * FROM user_daily_event WHERE user_id = #{userId} AND event_date = #{eventDate}
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT * FROM user_daily_event WHERE user_id = #{userId} ORDER BY event_date DESC
+    </select>
+
+    <select id="selectByUserIdWithLimit" resultMap="BaseResultMap">
+        SELECT * FROM user_daily_event WHERE user_id = #{userId} ORDER BY event_date DESC LIMIT #{limit}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_daily_event (
+            user_id, event_id, event_date, event_type, event_name, 
+            event_description, impact_type, impact_value, is_applied
+        ) VALUES (
+            #{userId}, #{eventId}, #{eventDate}, #{eventType}, #{eventName},
+            #{eventDescription}, #{impactType}, #{impactValue}, #{isApplied}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE user_daily_event SET
+            event_id = #{eventId},
+            event_date = #{eventDate},
+            event_type = #{eventType},
+            event_name = #{eventName},
+            event_description = #{eventDescription},
+            impact_type = #{impactType},
+            impact_value = #{impactValue},
+            is_applied = #{isApplied}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM user_daily_event WHERE id = #{id}
+    </delete>
+
+</mapper>
