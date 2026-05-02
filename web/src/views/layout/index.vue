@@ -38,6 +38,10 @@
           <el-icon><Star /></el-icon>
           <template #title>天赋加点</template>
         </el-menu-item>
+        <el-menu-item index="/dashboard/life-event">
+          <el-icon><Dice /></el-icon>
+          <template #title>随机人生事件</template>
+        </el-menu-item>
         <el-sub-menu v-if="isAdmin" index="admin-menu">
           <template #title>
             <el-icon><Setting /></el-icon>
