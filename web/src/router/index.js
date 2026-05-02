@@ -61,10 +61,22 @@ const routes = [
         meta: { title: '职场进度' }
       },
       {
+        path: 'talent',
+        name: 'Talent',
+        component: () => import('@/views/talent/index.vue'),
+        meta: { title: '天赋加点' }
+      },
+      {
         path: 'admin',
         name: 'Admin',
         component: () => import('@/views/admin/index.vue'),
         meta: { title: '系统管理', requiresAdmin: true }
+      },
+      {
+        path: 'admin/talent',
+        name: 'AdminTalent',
+        component: () => import('@/views/admin/talent.vue'),
+        meta: { title: '天赋管理', requiresAdmin: true }
       }
     ]
   }

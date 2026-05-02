@@ -34,10 +34,24 @@
           <el-icon><Briefcase /></el-icon>
           <template #title>职场进度</template>
         </el-menu-item>
-        <el-menu-item v-if="isAdmin" index="/dashboard/admin">
-          <el-icon><Setting /></el-icon>
-          <template #title>系统管理</template>
+        <el-menu-item index="/dashboard/talent">
+          <el-icon><Star /></el-icon>
+          <template #title>天赋加点</template>
         </el-menu-item>
+        <el-sub-menu v-if="isAdmin" index="admin-menu">
+          <template #title>
+            <el-icon><Setting /></el-icon>
+            <span>系统管理</span>
+          </template>
+          <el-menu-item index="/dashboard/admin">
+            <el-icon><User /></el-icon>
+            <template #title>用户管理</template>
+          </el-menu-item>
+          <el-menu-item index="/dashboard/admin/talent">
+            <el-icon><Star /></el-icon>
+            <template #title>天赋管理</template>
+          </el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
     <el-container class="layout-main-container">
